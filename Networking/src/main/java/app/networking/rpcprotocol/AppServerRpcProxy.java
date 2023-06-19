@@ -1,9 +1,10 @@
 package app.networking.rpcprotocol;
 
+import app.model.Game;
+import app.model.Round;
 import app.model.User;
-import app.networking.dto.CredentialsDto;
-import app.networking.dto.DtoUtils;
-import app.networking.dto.PlayerDto;
+import app.model.Word;
+import app.networking.dto.*;
 import app.networking.rpcprotocol.request.Request;
 import app.networking.rpcprotocol.request.RequestType;
 import app.networking.rpcprotocol.response.Response;
@@ -16,8 +17,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.stream.Collectors;
 
 public class AppServerRpcProxy implements AppServices {
 
@@ -69,6 +73,75 @@ public class AppServerRpcProxy implements AppServices {
             throw new AppException(err);
         }
     }
+
+    @Override
+    public void setPlayerReady(Word word) throws AppException {
+        Request request = new Request.Builder().type(RequestType.SET_PLAYER_READY).data(DtoUtils.getDto(word)).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if (response.type() == ResponseType.ERROR) {
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+    }
+
+    @Override
+    public List<Game> startGame(Game game) throws AppException {
+        GameDto gameDto = DtoUtils.getDto(game);
+        Request request = new Request.Builder().type(RequestType.START_GAME).data(gameDto).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK) {
+            return Arrays.stream(((GameDto[]) response.data())).map(DtoUtils::getFromDto).collect(Collectors.toList());
+        }
+        if (response.type() == ResponseType.ERROR) {
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Unknown response");
+    }
+
+    @Override
+    public Long getMaxGameId() throws AppException {
+        Request request = new Request.Builder().type(RequestType.GET_MAX_GAME_ID).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK) {
+            return (Long) response.data();
+        }
+        if (response.type() == ResponseType.ERROR) {
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Unknown response");
+    }
+
+    @Override
+    public Long getMaxRoundId() throws AppException {
+        Request request = new Request.Builder().type(RequestType.GET_MAX_ROUND_ID).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK) {
+            return (Long) response.data();
+        }
+        if (response.type() == ResponseType.ERROR) {
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Unknown response");
+    }
+
+    @Override
+    public void addRound(Round round) throws AppException {
+        Request request = new Request.Builder().type(RequestType.ADD_ROUND).data(DtoUtils.getDto(round)).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.ERROR) {
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+    }
+
 
     private void closeConnection() {
         finished = true;
@@ -171,10 +244,32 @@ public class AppServerRpcProxy implements AppServices {
                 e.printStackTrace();
             }
         }
+        if(response.type() == ResponseType.PLAYER_READY){
+            Integer noOfReady = (Integer) response.data();
+            try{
+                if(client != null){
+                    client.notifyPlayerReady(noOfReady);
+                }
+            }
+            catch (AppException e){
+                e.printStackTrace();
+            }
+        }
+        if(response.type() == ResponseType.TURN_OVER){
+            Integer noOfReady = (Integer) response.data();
+            try{
+                if(client != null){
+                    client.notifyTurnOver(noOfReady);
+                }
+            }
+            catch (AppException e){
+                e.printStackTrace();
+            }
+        }
     }
 
     private boolean isUpdate(Response response) {
-        if(response.type() == ResponseType.LOGIN_SUCCESSFULLY || response.type() == ResponseType.LOGOUT_SUCCESSFULLY){
+        if(response.type() == ResponseType.LOGIN_SUCCESSFULLY || response.type() == ResponseType.LOGOUT_SUCCESSFULLY  || response.type() == ResponseType.PLAYER_READY || response.type() == ResponseType.TURN_OVER){
             return true;
         }
         return false;

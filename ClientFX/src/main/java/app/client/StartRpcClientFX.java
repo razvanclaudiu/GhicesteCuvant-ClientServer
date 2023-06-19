@@ -1,5 +1,6 @@
 package app.client;
 
+import app.client.gui.GameController;
 import app.client.gui.LoginController;
 import app.client.gui.StartController;
 import app.networking.rpcprotocol.AppServerRpcProxy;
@@ -57,6 +58,11 @@ public class StartRpcClientFX extends Application {
                 getClass().getClassLoader().getResource("start.fxml")).getController();
 
         loginController.setStartController(startController);
+
+        GameController gameController = new FXMLLoader(
+                getClass().getClassLoader().getResource("game.fxml")).getController();
+
+        loginController.setGameController(gameController);
 
         primaryStage.setOnCloseRequest(event -> {
            primaryStage.close();

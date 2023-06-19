@@ -16,6 +16,8 @@ public class LoginController extends Controller{
 
     private StartController startController;
 
+    private GameController gameController;
+
     @FXML
     public TextField usernameTextField;
 
@@ -45,6 +47,8 @@ public class LoginController extends Controller{
 
             startController.setPlayer(user);
 
+            startController.setGameController(gameController);
+
             stage.setScene(new Scene(root));
         }
         catch (IOException | AppException ex){
@@ -61,5 +65,11 @@ public class LoginController extends Controller{
         this.startController = startController;
     }
 
+    public void setGameController(GameController gameController) {
+        this.gameController = gameController;
+    }
 
+    public GameController getGameController() {
+        return gameController;
+    }
 }

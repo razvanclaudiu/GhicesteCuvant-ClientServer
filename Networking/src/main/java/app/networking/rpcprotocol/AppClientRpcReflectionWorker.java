@@ -1,9 +1,10 @@
 package app.networking.rpcprotocol;
 
+import app.model.Game;
+import app.model.Round;
 import app.model.User;
-import app.networking.dto.CredentialsDto;
-import app.networking.dto.DtoUtils;
-import app.networking.dto.PlayerDto;
+import app.model.Word;
+import app.networking.dto.*;
 import app.networking.rpcprotocol.request.Request;
 import app.networking.rpcprotocol.response.Response;
 import app.networking.rpcprotocol.response.ResponseType;
@@ -119,6 +120,67 @@ public class AppClientRpcReflectionWorker implements Runnable, AppObserver {
         }
     }
 
+    private Response handleSET_PLAYER_READY(Request request){
+        System.out.println("Set player ready request ...");
+        WordDto wordDto = (WordDto)request.data();
+        try{
+            Word word = DtoUtils.getFromDto(wordDto);
+            server.setPlayerReady(word);
+            return new Response.Builder().type(ResponseType.OK).build();
+        }
+        catch(AppException e){
+            return new Response.Builder().type(ResponseType.ERROR).data(e.getMessage()).build();
+        }
+    }
+
+    private Response handleSTART_GAME(Request request){
+        System.out.println("Start game request ...");
+        GameDto gameDto = (GameDto)request.data();
+        try{
+            Game game = DtoUtils.getFromDto(gameDto);
+            GameDto[] gameDtos = server.startGame(game).stream().map(DtoUtils::getDto).toArray(GameDto[]::new);
+            return new Response.Builder().type(ResponseType.OK).data(gameDtos).build();
+        }
+        catch(AppException e){
+            return new Response.Builder().type(ResponseType.ERROR).data(e.getMessage()).build();
+        }
+    }
+
+    private Response handleGET_MAX_GAME_ID(Request request){
+        System.out.println("Get max game id request ...");
+        try{
+            Long maxGameId = server.getMaxGameId();
+            return new Response.Builder().type(ResponseType.OK).data(maxGameId).build();
+        }
+        catch(AppException e){
+            return new Response.Builder().type(ResponseType.ERROR).data(e.getMessage()).build();
+        }
+    }
+
+    private Response handleGET_MAX_ROUND_ID(Request request){
+        System.out.println("Get max round id request ...");
+        try{
+            Long maxRoundId = server.getMaxRoundId();
+            return new Response.Builder().type(ResponseType.OK).data(maxRoundId).build();
+        }
+        catch(AppException e){
+            return new Response.Builder().type(ResponseType.ERROR).data(e.getMessage()).build();
+        }
+    }
+
+    private Response handleADD_ROUND(Request request){
+        System.out.println("Add round request ...");
+        RoundDto roundDto = (RoundDto)request.data();
+        try{
+            Round round = DtoUtils.getFromDto(roundDto);
+            server.addRound(round);
+            return new Response.Builder().type(ResponseType.OK).build();
+        }
+        catch(AppException e){
+            return new Response.Builder().type(ResponseType.ERROR).data(e.getMessage()).build();
+        }
+    }
+
     private final static Response okResponse=new Response.Builder().type(ResponseType.OK).build();
 
     @Override
@@ -135,6 +197,29 @@ public class AppClientRpcReflectionWorker implements Runnable, AppObserver {
     @Override
     public void notifyLogout(Integer noOfUsers) throws AppException {
         Response response = new Response.Builder().type(ResponseType.LOGOUT_SUCCESSFULLY).data(noOfUsers).build();
+        try{
+            sendResponse(response);
+        }
+        catch(IOException e){
+            throw new AppException("Sending error: " + e);
+        }
+    }
+
+    @Override
+    public void notifyPlayerReady(Integer noOfReady) throws AppException {
+        Response response = new Response.Builder().type(ResponseType.PLAYER_READY).data(noOfReady).build();
+        try{
+            sendResponse(response);
+        }
+        catch(IOException e){
+            throw new AppException("Sending error: " + e);
+        }
+    }
+
+
+    @Override
+    public void notifyTurnOver(Integer noOfOver) throws AppException {
+        Response response = new Response.Builder().type(ResponseType.TURN_OVER).data(noOfOver).build();
         try{
             sendResponse(response);
         }

@@ -1,17 +1,40 @@
 package app.model;
 
-import java.util.Objects;
+import jakarta.persistence.*;
 
+import java.util.Objects;
+import java.util.Set;
+
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     Long id;
+    @Column(name = "username")
     private String username;
+    @Column(name = "password")
     private String password;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Word> words;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Game> games;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Round> rounds;
+
+    public User() {}
 
     public User(Long id, String username, String password) {
         this.id = id;
         this.username = username;
         this.password = password;
     }
+
+
 
     public Long getId() {
         return id;

@@ -10,8 +10,7 @@
       <TextField fx:id="wordTextField" layoutX="226.0" layoutY="148.0" />
       <Button layoutX="262.0" layoutY="200.0" mnemonicParsing="false" onAction="#startAction" text="Start game" />
       <Label layoutX="272.0" layoutY="100.0" text="Your word" />
-      <Label fx:id="readyLabel" layoutX="475.0" layoutY="83.0" text="1/3 Players Ready" />
-      <Label fx:id="loggedLabel" layoutX="471.0" layoutY="109.0" text="1/3 Players Logged" />
+      <Label fx:id="loggedLabel" layoutX="462.0" layoutY="152.0" text="Logged clients: 0" />
       <Button layoutX="31.0" layoutY="344.0" mnemonicParsing="false" onAction="#logoutAction" text="Logout" />
    </children>
 </Pane>

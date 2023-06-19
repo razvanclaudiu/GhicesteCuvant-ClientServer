@@ -2,8 +2,14 @@ package app.server;
 
 import app.networking.utils.AbstractServer;
 import app.networking.utils.RpcConcurrentServer;
+import app.persistance.GameRepository;
 import app.persistance.PlayerRepository;
+import app.persistance.RoundRepository;
+import app.persistance.WordRepository;
 import app.persistance.implementation.DefaultPlayerRepository;
+import app.persistance.implementation.HibernateGameRepository;
+import app.persistance.implementation.HibernateRoundRepository;
+import app.persistance.implementation.HibernateWordRepository;
 import app.server.implementation.DefaultAppServer;
 import app.services.AppException;
 import app.services.AppServices;
@@ -27,9 +33,15 @@ public static void main(String[] args) {
         return;
     }
 
-    PlayerRepository playerRepository = new DefaultPlayerRepository(properties);
+    PlayerRepository playerRepository = new DefaultPlayerRepository();
 
-    AppServices services = new DefaultAppServer(playerRepository);
+    WordRepository wordRepository = new HibernateWordRepository();
+
+    GameRepository gameRepository = new HibernateGameRepository();
+
+    RoundRepository roundRepository = new HibernateRoundRepository();
+
+    AppServices services = new DefaultAppServer(playerRepository, wordRepository, gameRepository, roundRepository);
 
     int serverPort = defaultPort;
 

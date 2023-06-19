@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
 
-    implementation project(':Persistence')
+    implementation project(':Persistance')
     implementation project(':Services')
     implementation project(':Model')
     implementation project(':Networking')
